@@ -5,7 +5,7 @@ from datetime import datetime
 app = Flask(__name__)
 DB_NAME = "aceest_fitness_v3.db"
 
-# Core factors from Aceestver2.0.1.py baseline
+# Core factors from Aceestver-2.1.2.py
 programs = {
     "Fat Loss (FL)": {"factor": 22},
     "Muscle Gain (MG)": {"factor": 35},
@@ -13,25 +13,18 @@ programs = {
 }
 
 def init_db():
-    """Initializes the multi-table database schema"""
+    """Initializes multi-table schema for clients and adherence tracking"""
     conn = sqlite3.connect(DB_NAME)
     cur = conn.cursor()
     cur.execute("""
         CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT UNIQUE,
-            age INTEGER,
-            weight REAL,
-            program TEXT,
-            calories INTEGER
+            name TEXT UNIQUE, age INTEGER, weight REAL, program TEXT, calories INTEGER
         )
     """)
     cur.execute("""
         CREATE TABLE IF NOT EXISTS progress (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            client_name TEXT,
-            week TEXT,
-            adherence INTEGER
+            id INTEGER PRIMARY KEY AUTOINCREMENT, client_name TEXT, week TEXT, adherence INTEGER
         )
     """)
     conn.commit()
@@ -41,10 +34,10 @@ init_db()
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({"status": "healthy", "version": "2.0.1"}), 200
+    return jsonify({"status": "healthy", "version": "2.1.2"}), 200
 
 @app.route('/api/client', methods=['POST'])
-def add_client():
+def save_client():
     data = request.json
     name, age, weight = data.get('name'), data.get('age'), data.get('weight')
     program = data.get('program')
@@ -52,7 +45,6 @@ def add_client():
     if not name or program not in programs:
         return jsonify({"error": "Name and valid Program required"}), 400
 
-    # Business Logic: weight * factor
     calories = int(float(weight) * programs[program]["factor"])
 
     try:

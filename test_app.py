@@ -8,13 +8,13 @@ def client():
     with app.test_client() as client:
         yield client
 
-def test_save_client_and_progress(client):
-    """Verify dual-table integrity"""
+def test_full_client_lifecycle(client):
+    """Verify dual-table persistence for clients and weekly logs"""
     # 1. Save Client
-    c_res = client.post('/api/client', json={"name": "Farhan", "weight": 80, "program": "Muscle Gain (MG)", "age": 25})
-    assert c_res.status_code == 201
+    res1 = client.post('/api/client', json={"name": "Farhan", "age": 25, "weight": 80, "program": "Muscle Gain (MG)"})
+    assert res1.status_code == 201
     
     # 2. Log Progress
-    p_res = client.post('/api/progress', json={"name": "Farhan", "adherence": 95})
-    assert p_res.status_code == 201
-    assert "Week" in p_res.get_json()["week"]
+    res2 = client.post('/api/progress', json={"name": "Farhan", "adherence": 90})
+    assert res2.status_code == 201
+    assert "Week" in res2.get_json()["week"]
