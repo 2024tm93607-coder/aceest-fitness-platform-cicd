@@ -1,0 +1,17 @@
+name: ACEest Evolution CI
+on: [push, pull_request]
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Build & Lint
+      run: python -m py_compile app.py
+    - name: Docker Image Assembly
+      run: docker build -t aceest-fitness-v1 .
+    - name: Automated Testing
+      run: docker run aceest-fitness-v1 pytest
