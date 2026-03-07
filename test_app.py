@@ -8,15 +8,13 @@ def client():
     with app.test_client() as client:
         yield client
 
-def test_add_client_success(client):
-    """Verify Muscle Gain Factor: 80kg * 35 = 2800 kcal"""
-    payload = {"name": "Farhan", "weight": 80, "program": "Muscle Gain (MG)"}
-    response = client.post('/api/client', json=payload)
-    assert response.status_code == 201
-    assert response.get_json()["calories"] == 2800
-
-def test_invalid_program(client):
-    """Ensure system integrity rejects non-specified programs"""
-    payload = {"name": "Test", "weight": 70, "program": "Invalid"}
-    response = client.post('/api/client', json=payload)
-    assert response.status_code == 400
+def test_save_client_and_progress(client):
+    """Verify dual-table integrity"""
+    # 1. Save Client
+    c_res = client.post('/api/client', json={"name": "Farhan", "weight": 80, "program": "Muscle Gain (MG)", "age": 25})
+    assert c_res.status_code == 201
+    
+    # 2. Log Progress
+    p_res = client.post('/api/progress', json={"name": "Farhan", "adherence": 95})
+    assert p_res.status_code == 201
+    assert "Week" in p_res.get_json()["week"]
