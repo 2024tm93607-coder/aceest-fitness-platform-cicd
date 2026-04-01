@@ -55,3 +55,22 @@ This project employs a dual-pipeline Continuous Integration and Continuous Deplo
 
 * **Jenkins (Local Quality Gate):** Jenkins is configured locally and bridged to GitHub via an Ngrok Webhook. Whenever code is pushed to the `main` branch, GitHub sends a payload to the Ngrok tunnel, triggering Jenkins. Jenkins automatically pulls the latest code, sets up a virtual environment, installs dependencies, and executes the automated test suite to verify application logic before further deployment.
 * **GitHub Actions (Cloud Validation & Assembly):** Concurrently, a GitHub Actions workflow (`.github/workflows/main.yml`) is triggered on every push or pull request. This cloud pipeline spins up an Ubuntu environment, installs Python 3.11, lints the code, builds the Docker image (`Dockerfile`), and executes the `pytest` suite inside the containerized environment. This guarantees "write once, run anywhere" consistency.
+
+## 4. Jenkins Deployment & Configuration Setup
+To replicate or deploy the automated Jenkins pipeline on a new server or Virtual Machine, follow these steps:
+
+**Step 1: Configure the Jenkins Pipeline Job**
+1. Access the Jenkins dashboard and click **New Item**.
+2. Provide a project name, select **Pipeline**, and click **OK**.
+3. Under the **Build Triggers** section, check the box for **GitHub hook trigger for GITScm polling** to allow Jenkins to listen for external GitHub events.
+4. Scroll down to the **Pipeline** section and change the Definition to **Pipeline script from SCM**.
+5. Select **Git** as the SCM, paste your public GitHub repository URL, specify the correct branch (e.g., `*/main`), and ensure the Script Path is set to `Jenkinsfile`. Save the configuration.
+
+**Step 2: Configure the GitHub Webhook**
+1. Navigate to the **Settings** tab of your GitHub repository.
+2. Select **Webhooks** from the left sidebar and click **Add webhook**.
+3. Set the **Payload URL** to your Jenkins server's webhook endpoint: `http://<YOUR-JENKINS-IP>:8080/github-webhook/`. *(Note: Ensure the trailing slash is included. If your server is behind a firewall, use your Ngrok tunnel URL instead).*
+4. Change the **Content type** to `application/json`.
+5. Choose **Just the push event** as the trigger and save the webhook.
+
+*Once configured, every code push to the repository will automatically send a JSON payload to Jenkins, triggering the pipeline to pull the latest code and execute the automated build and quality gate stages defined in the `Jenkinsfile`.*
