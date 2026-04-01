@@ -14,7 +14,7 @@ git clone <your-github-repo-url>
 cd <repository-folder>
 ```
 
-**Step 2: Create and activate a virtual environment (Recommended)**
+**Step 2: Create and activate a virtual environment**
 ```bash
 # Windows
 python -m venv venv
