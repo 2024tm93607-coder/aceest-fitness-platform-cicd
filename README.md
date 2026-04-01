@@ -69,7 +69,7 @@ To replicate or deploy the automated Jenkins pipeline on a new server or Virtual
 **Step 2: Configure the GitHub Webhook**
 1. Navigate to the **Settings** tab of your GitHub repository.
 2. Select **Webhooks** from the left sidebar and click **Add webhook**.
-3. Set the **Payload URL** to your Jenkins server's webhook endpoint: `http://<YOUR-JENKINS-IP>:8080/github-webhook/`. *(Note: Ensure the trailing slash is included. If your server is behind a firewall, use your Ngrok tunnel URL instead).*
+3. Set the **Payload URL** to your Jenkins server's webhook endpoint: `http://localhost:8080/github-webhook/`. *(Note: Ensure the trailing slash is included. If your server is behind a firewall, use your Ngrok tunnel URL instead).*
 4. Change the **Content type** to `application/json`.
 5. Choose **Just the push event** as the trigger and save the webhook.
 
