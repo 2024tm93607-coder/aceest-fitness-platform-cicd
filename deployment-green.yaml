@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: aceest-fitness
+      version: v2
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness
+        version: v2
+    spec:
+      containers:
+      - name: aceest-fitness
+        image: tanvideshpande81/aceest-fitness:v3.2.4
+        ports:
+        - containerPort: 5000
