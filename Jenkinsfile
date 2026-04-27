@@ -1,7 +1,6 @@
 pipeline {
     agent any
 
-    // Fixed: Using the correct plugin tool identifier
     tools {
         dockerTool 'my-docker'
     }
@@ -9,6 +8,8 @@ pipeline {
     environment {
         DOCKER_IMAGE = 'tanvideshpande81/aceest-fitness'
         APP_VERSION = 'v3.2.4'
+        // This tells Jenkins to route Docker commands to your Windows host engine!
+        DOCKER_HOST = 'tcp://host.docker.internal:2375'
     }
 
     stages {
