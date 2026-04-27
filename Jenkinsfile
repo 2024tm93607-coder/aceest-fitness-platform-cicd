@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    // This tells Jenkins to download and use the Docker tool we just configured
+    tools {
+        docker 'my-docker'
+    }
+
     environment {
-        // Target Docker registry and application version
         DOCKER_IMAGE = 'tanvideshpande81/aceest-fitness'
         APP_VERSION = 'v3.2.4'
     }
@@ -29,7 +33,6 @@ pipeline {
         stage('Static Analysis: SonarQube') {
             steps {
                 script {
-                    // Utilizing the configured SonarScanner tool
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
                         sh "${scannerHome}/bin/sonar-scanner \
@@ -54,7 +57,6 @@ pipeline {
             steps {
                 echo 'Pushing to remote registry...'
                 script {
-                    // Authenticating via Jenkins global credentials
                     docker.withRegistry('', 'docker-hub-creds') {
                         appImage.push()
                         appImage.push('latest')
