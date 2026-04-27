@@ -22,7 +22,7 @@ spec:
       containers:
       - name: aceest-fitness-app
         # Pulling your specific image from Docker Hub
-        image: tanvideshpande81/aceest-fitness:latest
+        image: tanvideshpande81/aceest-fitness:v3.2.4
         ports:
         - containerPort: 5000
         imagePullPolicy: Always
