@@ -48,8 +48,8 @@ pipeline {
             steps {
                 echo 'Building container image...'
                 script {
-                    // Still using the plugin here because it successfully worked in the last run!
-                    appImage = docker.build("${DOCKER_IMAGE}:${APP_VERSION}")
+                    // Added 'def' to fix the memory leak warning in your logs
+                    def appImage = docker.build("${DOCKER_IMAGE}:${APP_VERSION}")
                 }
             }
         }
@@ -57,9 +57,9 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo 'Pushing to remote registry...'
-                // BULLETPROOF FIX: Bypassing the buggy Docker Plugin entirely and using native shell commands.
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                    // Optimized login syntax for maximum compatibility
+                    sh "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
                     sh "docker push ${DOCKER_IMAGE}:${APP_VERSION}"
                     sh "docker tag ${DOCKER_IMAGE}:${APP_VERSION} ${DOCKER_IMAGE}:latest"
                     sh "docker push ${DOCKER_IMAGE}:latest"
