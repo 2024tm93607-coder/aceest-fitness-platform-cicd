@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    // This tells Jenkins to download and use the Docker tool we just configured
+    // Fixed: Using the correct plugin tool identifier
     tools {
-        docker 'my-docker'
+        dockerTool 'my-docker'
     }
 
     environment {
