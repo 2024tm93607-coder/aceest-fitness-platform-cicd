@@ -53,7 +53,12 @@ pytest
 ## 3. CI/CD Integration Logic (Jenkins & GitHub Actions)
 This project employs a dual-pipeline Continuous Integration and Continuous Deployment (CI/CD) strategy to ensure code quality and deployment readiness.
 
-* **Jenkins (Local Quality Gate):** Jenkins is configured locally and bridged to GitHub via an Ngrok Webhook. Whenever code is pushed to the `main` branch, GitHub sends a payload to the Ngrok tunnel, triggering Jenkins. Jenkins automatically pulls the latest code, sets up a virtual environment, installs dependencies, and executes the automated test suite to verify application logic before further deployment.
+* **Jenkins (Continuous Deployment Pipeline):** Jenkins is configured locally and bridged to GitHub via an Ngrok Webhook. Upon a push to the `main` branch, the pipeline triggers automatically. It executes a comprehensive CI/CD workflow: 
+  1. Pulls the latest source code.
+  2. Executes the Pytest unit test suite.
+  3. Runs static code analysis and quality gate enforcement via **SonarQube**.
+  4. Builds the v3.2.4 Docker container image.
+  5. Authenticates and pushes the release image directly to the remote **Docker Hub** registry.
 * **GitHub Actions (Cloud Validation & Assembly):** Concurrently, a GitHub Actions workflow (`.github/workflows/main.yml`) is triggered on every push or pull request. This cloud pipeline spins up an Ubuntu environment, installs Python 3.11, lints the code, builds the Docker image (`Dockerfile`), and executes the `pytest` suite inside the containerized environment. This guarantees "write once, run anywhere" consistency.
 
 ## 4. Jenkins Deployment & Configuration Setup
