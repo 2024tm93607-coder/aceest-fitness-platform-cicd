@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // Your Docker Hub credentials and image name
+        // Target Docker registry and application version
         DOCKER_IMAGE = 'tanvideshpande81/aceest-fitness'
         APP_VERSION = 'v3.2.4'
     }
@@ -18,7 +18,7 @@ pipeline {
             steps {
                 echo 'Running Unit Tests...'
                 sh '''
-                python -m venv venv
+                python3 -m venv venv
                 . venv/bin/activate
                 pip install -r requirements.txt
                 pytest -v
@@ -29,7 +29,7 @@ pipeline {
         stage('Static Analysis: SonarQube') {
             steps {
                 script {
-                    // Uses the tool named 'SonarScanner' we configured earlier
+                    // Utilizing the configured SonarScanner tool
                     def scannerHome = tool 'SonarScanner'
                     withSonarQubeEnv('SonarQube') {
                         sh "${scannerHome}/bin/sonar-scanner \
@@ -54,7 +54,7 @@ pipeline {
             steps {
                 echo 'Pushing to remote registry...'
                 script {
-                    // Uses the 'docker-hub-creds' ID we created
+                    // Authenticating via Jenkins global credentials
                     docker.withRegistry('', 'docker-hub-creds') {
                         appImage.push()
                         appImage.push('latest')
