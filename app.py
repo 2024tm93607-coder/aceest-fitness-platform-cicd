@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template_string
 import sqlite3
 from datetime import datetime, date
 import random
@@ -40,6 +40,66 @@ def init_db():
 
 init_db()
 
+# --- New Dashboard Route ---
+
+@app.route('/')
+def home():
+    """Main Dashboard for Kubernetes Visibility using your existing SQLite setup"""
+    try:
+        conn = sqlite3.connect(DB_NAME); cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM users")
+        user_count = cur.fetchone()[0]
+        cur.execute("SELECT COUNT(*) FROM clients")
+        client_count = cur.fetchone()[0]
+        conn.close()
+        
+        return render_template_string("""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>ACEest Platform - Dashboard</title>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 40px; }
+                .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+                h1 { color: #1a73e8; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
+                .status-bar { background: #e6f4ea; color: #1e8e3e; padding: 10px; border-radius: 6px; font-weight: bold; margin-bottom: 20px; }
+                .stats-grid { display: flex; gap: 20px; margin: 20px 0; }
+                .stat-card { flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #dee2e6; }
+                .stat-number { font-size: 24px; font-weight: bold; color: #202124; }
+                .stat-label { color: #5f6368; font-size: 14px; text-transform: uppercase; }
+                .links { margin-top: 30px; font-size: 14px; }
+                a { color: #1a73e8; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>ACEest Fitness & Performance</h1>
+                <div class="status-bar">● System Operational (K8s Cluster: Minikube)</div>
+                <p>Welcome to the Platform Dashboard. The application is processing requests on port 5000.</p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ user_count }}</div>
+                        <div class="stat-label">Registered Admins</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ client_count }}</div>
+                        <div class="stat-label">Total Clients</div>
+                    </div>
+                </div>
+                <div class="links">
+                    <strong>Quick Links:</strong> 
+                    | <a href="/health">API Health Check</a> 
+                </div>
+                <p style="color: #9aa0a6; font-size: 12px; margin-top: 40px;">Version: 3.2.4 | Deployment: RollingUpdate</p>
+            </div>
+        </body>
+        </html>
+        """, user_count=user_count, client_count=client_count)
+    except Exception as e:
+        return f"Database Connection Error: {str(e)}", 500
+
+# --- Your Existing API Routes ---
+
 @app.route('/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "version": "3.2.4"}), 200
@@ -55,7 +115,6 @@ def login():
 
 @app.route('/api/client', methods=['POST'])
 def save_client():
-    """Supports new membership status logic"""
     data = request.json
     name, weight, program = data.get('name'), data.get('weight'), data.get('program')
     if not name or program not in programs: return jsonify({"error": "Invalid input"}), 400
@@ -70,7 +129,6 @@ def save_client():
 
 @app.route('/api/membership/<name>', methods=['GET'])
 def check_membership(name):
-    """Retrieves active billing and membership status"""
     conn = sqlite3.connect(DB_NAME); cur = conn.cursor()
     cur.execute("SELECT membership_status, membership_end FROM clients WHERE name=?", (name,))
     row = cur.fetchone(); conn.close()
@@ -116,7 +174,6 @@ def get_workouts(name):
 
 @app.route('/api/program/generate', methods=['POST'])
 def generate_program():
-    """Generates an AI workout based on the new program templates"""
     data = request.json
     name, focus = data.get('name'), data.get('focus', 'Beginner')
     if focus not in program_templates: return jsonify({"error": "Invalid focus area"}), 400
@@ -131,7 +188,6 @@ def generate_program():
 
 @app.route('/api/report/<name>', methods=['GET'])
 def get_report(name):
-    """Generates the updated PDF report"""
     conn = sqlite3.connect(DB_NAME); cur = conn.cursor()
     cur.execute("SELECT * FROM clients WHERE name=?", (name,))
     row = cur.fetchone(); conn.close()
