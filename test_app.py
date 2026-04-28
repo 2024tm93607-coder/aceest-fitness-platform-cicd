@@ -2,7 +2,6 @@ import pytest
 import os
 from app import app, init_db, DB_NAME
 
-# --- CONSTANTS TO FIX SONARQUBE WARNINGS ---
 API_CLIENT_ENDPOINT = '/api/client'
 API_WORKOUT_ENDPOINT = '/api/workout'
 API_LOGIN_ENDPOINT = '/api/login'
@@ -16,10 +15,15 @@ def client():
     with app.test_client() as client: yield client
     if os.path.exists(DB_NAME): os.remove(DB_NAME)
 
+def test_dashboard_home(client):
+    res = client.get('/')
+    assert res.status_code == 200
+    assert b"ACEest Platform - Dashboard" in res.data
+
 def test_health_check(client):
     res = client.get('/health')
     assert res.status_code == 200
-    assert res.get_json()["version"] == "3.2.4" # Updated for v3.2.4
+    assert res.get_json()["version"] == "3.2.4"
 
 def test_login_success(client):
     res = client.post(API_LOGIN_ENDPOINT, json={"username": "admin", "password": "admin"})
@@ -31,7 +35,7 @@ def test_login_failure(client):
     assert res.status_code == 401
 
 def test_client_creation_and_math(client):
-    res = client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Muscle Gain"}) # Updated program name
+    res = client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Muscle Gain"})
     assert res.status_code == 201
     assert res.get_json()["calories"] == 2800
 
@@ -40,10 +44,9 @@ def test_invalid_client_rejection(client):
     assert res.status_code == 400
 
 def test_client_membership_persistence(client):
-    res = client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Beginner", "membership_status": "Active", "membership_end": "2026-12-31"}) # Updated fields
+    res = client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Beginner", "membership_status": "Active", "membership_end": "2026-12-31"})
     assert res.status_code == 201
 
-# --- NEW TEST ADDED FOR v3.2.4 ---
 def test_membership_retrieval(client):
     client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Muscle Gain", "membership_status": "Active", "membership_end": "2026-12-31"})
     res = client.get('/api/membership/Farhan')
@@ -51,7 +54,7 @@ def test_membership_retrieval(client):
     assert res.get_json()["status"] == "Active"
 
 def test_bmi_and_risk_logic(client):
-    client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "height": 175, "weight": 75, "program": "Beginner"}) # Updated program name
+    client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "height": 175, "weight": 75, "program": "Beginner"})
     res = client.get('/api/bmi/Farhan')
     assert res.status_code == 200
     assert res.get_json()["bmi"] == 24.5
@@ -89,13 +92,13 @@ def test_get_workout_history_ordering(client):
     assert res.get_json()[0]["date"] == "2026-03-05"
 
 def test_ai_program_generation(client):
-    client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Beginner"}) # Updated program
-    res = client.post('/api/program/generate', json={"name": "Farhan", "focus": "Fat Loss"}) # Updated payload
+    client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Beginner"})
+    res = client.post('/api/program/generate', json={"name": "Farhan", "focus": "Fat Loss"})
     assert res.status_code == 200
-    assert "program" in res.get_json() # Updated assertion for template generation
+    assert "program" in res.get_json()
 
 def test_pdf_report_generation(client):
-    client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Beginner"}) # Updated program
+    client.post(API_CLIENT_ENDPOINT, json={"name": "Farhan", "weight": 80, "program": "Beginner"})
     res = client.get('/api/report/Farhan')
     assert res.status_code == 200
     assert res.headers["Content-Type"] == "application/pdf"

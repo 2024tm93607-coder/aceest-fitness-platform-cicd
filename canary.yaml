@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aceest-fitness-canary
+spec:
+  replicas: 1  # Only one pod for testing
+  selector:
+    matchLabels:
+      app: aceest-fitness # This MUST match the service selector
+  template:
+    metadata:
+      labels:
+        app: aceest-fitness # This is what the service "grabs"
+        env: canary         # An extra label to help you identify it
+    spec:
+      containers:
+      - name: aceest-fitness
+        image: tanvideshpande81/aceest-fitness:v3.2.5 # Usually a NEWER version
+        ports:
+        - containerPort: 5000

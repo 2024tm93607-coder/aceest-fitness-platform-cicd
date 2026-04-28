@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_file, render_template_string
 import sqlite3
 from datetime import datetime, date
-import random
+import secrets
 import os
 from fpdf import FPDF
 
@@ -39,8 +39,6 @@ def init_db():
     conn.commit(); conn.close()
 
 init_db()
-
-# --- New Dashboard Route ---
 
 @app.route('/')
 def home():
@@ -97,8 +95,6 @@ def home():
         """, user_count=user_count, client_count=client_count)
     except Exception as e:
         return f"Database Connection Error: {str(e)}", 500
-
-# --- Your Existing API Routes ---
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -178,7 +174,7 @@ def generate_program():
     name, focus = data.get('name'), data.get('focus', 'Beginner')
     if focus not in program_templates: return jsonify({"error": "Invalid focus area"}), 400
 
-    program_detail = random.choice(program_templates[focus])
+    program_detail = secrets.choice(program_templates[focus])
     
     conn = sqlite3.connect(DB_NAME); cur = conn.cursor()
     cur.execute("UPDATE clients SET program=? WHERE name=?", (program_detail, name))
