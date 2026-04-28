@@ -26,12 +26,12 @@ def test_health_check(client):
     assert res.get_json()["version"] == "3.2.4"
 
 def test_login_success(client):
-    res = client.post(API_LOGIN_ENDPOINT, json={"username": "admin", "password": "admin"})
+    res = client.post(API_LOGIN_ENDPOINT, json={"username": "admin", "password": "admin"}) # NOSONAR
     assert res.status_code == 200
     assert res.get_json()["role"] == "Admin"
 
 def test_login_failure(client):
-    res = client.post(API_LOGIN_ENDPOINT, json={"username": "admin", "password": "wrong"})
+    res = client.post(API_LOGIN_ENDPOINT, json={"username": "admin", "password": "wrong"}) # NOSONAR
     assert res.status_code == 401
 
 def test_client_creation_and_math(client):
